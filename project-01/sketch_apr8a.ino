@@ -95,7 +95,7 @@ bool compararSecuencias(int patron[], int secuencia[]) {
 
 // Función para hacer titilar un led
 void titilarLed(int pinLed) {
-  for (int i = 0; i < 3; i++) {
+  while (digitalRead(sw1) == HIGH && digitalRead(sw2) == HIGH) {
     digitalWrite(pinLed, HIGH);
     delay(200);
     digitalWrite(pinLed, LOW);
