@@ -20,24 +20,24 @@ private:
 public:
     // Constructor: inicializa la lista vacía
     LinkedList() {
-        head = nullptr;
+      head = nullptr;
     }
 
     // Método para agregar un elemento al principio de la lista
     void insertar(int led) {
-        Node* newNode = new Node;
-        newNode->led = led;
-        newNode->sig = head;
-        head = newNode;
+      Node* newNode = new Node;
+      newNode->led = led;
+      newNode->sig = head;
+      head = newNode;
     }
 
     // Método para limpiar la lista (eliminar todos los nodos)
     void clear() {
-        while (head != nullptr) {
-            Node* temp = head;
-            head = head->sig;
-            delete temp;
-        }
+      while (head != nullptr) {
+        Node* temp = head;
+        head = head->sig;
+        delete temp;
+      }
     }
 
     // Metodo para generar el patron de los leds
@@ -65,8 +65,25 @@ public:
         digitalWrite(led2, LOW);
         digitalWrite(led3, LOW);
         delay(200); // Breve pausa entre leds
-        current = current->next; // Pasar al siguiente led
+        actual = actual->sig; // Pasar al siguiente led
       }
+    }
+
+    // Metodo para comparar secuencias
+    bool sonIguales(const LinkedList& otraLista) const {
+      Node* nodoActual1 = head;
+      Node* nodoActual2 = otraLista.head;
+
+      while (nodoActual1 != nullptr && nodoActual2 != nullptr) {
+        if (nodoActual1->led != nodoActual2->led) {
+          return false; // Los valores no coinciden
+        }
+        nodoActual1 = nodoActual1->sig;
+        nodoActual2 = nodoActual2->sig;
+      }
+
+      // Ambas listas deben haber llegado al final al mismo tiempo
+      return nodoActual1 == nullptr && nodoActual2 == nullptr;
     }
 };
 
@@ -110,7 +127,7 @@ void loop() {
   }
 
   // Comparar las secuencias
-  if (compararSecuencias(patronLeds, patronUsuario)) {
+  if (patronLeds.sonIguales(patronUsuario)) {
     longitud++;
     titilarLed(led1);
   } else {
@@ -128,22 +145,6 @@ void presionarBoton(int pinLed, int valorLed) {
   digitalWrite(pinLed, HIGH);
   delay(500);
   digitalWrite(pinLed, LOW);
-}
-
-bool compararSecuencias(struct Node* original, struct Node* usuario) {
-  bool esIgual;
-  while (original && usuario) {
-    esIgual = original->led == usuario->led
-    
-    if (!esIgual) {
-      return false;
-    }
-
-    original = original->sig;
-    usuario = usuario->sig;
-  }
-
-  return esIgual;
 }
 
 // Función para hacer titilar un led
