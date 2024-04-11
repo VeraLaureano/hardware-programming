@@ -1,11 +1,71 @@
-// Definir los pines para los leds y los botones
-#define led1 10
-#define led2 11
-#define led3 13
-#define sw1 12
-#define sw2 7
+class Boton {
+  private:
+    int pin; // Numero de pin al que se conecto el boton
+  public:
+    Boton(int pin) {
+      pin = pin;
+    }
 
-int longitud = 3; // Definir longitud del patron de leds
+    // Metodo para saber si el boton esta precionado
+    bool estaPrecionado() {
+      return digitalRead(pin) == LOW;
+    }
+
+    int getPin() const {
+      return pin;
+    }
+};
+
+// Definir botones
+Boton botonAlto(7);
+Boton botonBajo(12);
+
+// Definir estructura para cada led
+class Led {
+  private:
+    int pin;  // Número del pin al que está conectado el LED
+    int id;   // Identificador para saber que color representa
+  public:
+    Led(int pin, int id) {
+      pin = pin;
+      id = id;
+    }
+
+    // Metodo para encender el led
+    void encender() {
+      digitalWrite(pin, HIGH);
+    }
+
+    // Metodo para apagar el led
+    void apagar() {
+      digitalWrite(pin, LOW);
+    }
+
+    // Metodo para hacer titilar el led
+    void titilar() {
+      while (!botonAlto.estaPrecionado() && !botonBajo.estaPrecionado()) {
+        encender();
+        delay(200);
+        apagar();
+        delay(200);
+      }
+    }
+
+    // Obtener numero de pin
+    int getPin() const {
+      return pin;
+    }
+
+    // Obtener id
+    int getId() const {
+      return id;
+    }
+};
+
+// Definir leds (pin, valor: 1-verde, 2-amarillo, 3-rojo)
+Led ledVerde(10, 1);
+Led ledAmarillo(11, 2);
+Led ledRojo(13, 3);
 
 // Definir estructura para lista de leds
 struct Node {
@@ -14,10 +74,10 @@ struct Node {
 };
 
 class LinkedList {
-private:
+  private:
     Node* head; // Puntero al primer nodo (cabeza)
 
-public:
+  public:
     // Constructor: inicializa la lista vacía
     LinkedList() {
       head = nullptr;
@@ -53,17 +113,17 @@ public:
 
       while (actual != nullptr) {
         if (actual->led == 1) {
-          digitalWrite(led1, HIGH);
+          ledVerde.encender();
         } else if (actual->led == 2) {
-          digitalWrite(led2, HIGH);
+          ledAmarillo.encender();
         } else if (actual->led == 3) {
-          digitalWrite(led3, HIGH);
+          ledRojo.encender();
         }
 
         delay(500);
-        digitalWrite(led1, LOW);
-        digitalWrite(led2, LOW);
-        digitalWrite(led3, LOW);
+        ledVerde.apagar();
+        ledAmarillo.apagar();
+        ledRojo.apagar();
         delay(200); // Breve pausa entre leds
         actual = actual->sig; // Pasar al siguiente led
       }
@@ -87,16 +147,18 @@ public:
     }
 };
 
-LinkedList patronLeds;
-LinkedList patronUsuario;
+int longitud = 3; // Definir longitud del patron de leds
+LinkedList patronLeds; // Lista que guarda el patron original
+LinkedList patronUsuario; // Lista que guarda el patron que ingreso el usuario
+
 
 void setup() {
   // Inicializar los pines de los leds y los botones
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(sw1, INPUT_PULLUP);
-  pinMode(sw2, INPUT_PULLUP);
+  pinMode(ledVerde.getPin(), OUTPUT);
+  pinMode(ledAmarillo.getPin(), OUTPUT);
+  pinMode(ledRojo.getPin(), OUTPUT);
+  pinMode(botonAlto.getPin(), INPUT_PULLUP);
+  pinMode(botonAlto.getPin(), INPUT_PULLUP);
 }
 
 void loop() {
@@ -109,17 +171,16 @@ void loop() {
 
   // Esperar a que el usuario ingrese la secuencia
   for (int i = 0; i < longitud; i++) {
-    while (digitalRead(sw1) == HIGH && digitalRead(sw2) == HIGH) {
+    while (!botonAlto.estaPrecionado() && !botonBajo.estaPrecionado()) {
       // Esperar a que se presione uno de los botones
     }
 
-    if (digitalRead(sw1) == LOW && digitalRead(sw2) == HIGH) {
-      presionarBoton(led1, 1);
-    } else if (digitalRead(sw1) == LOW && digitalRead(sw2) == LOW) {
-      presionarBoton(led2, 2);
-    } 
-    else if (digitalRead(sw2) == LOW && digitalRead(sw1) == HIGH) {
-      presionarBoton(led3, 3);
+    if (botonAlto.estaPrecionado() && !botonBajo.estaPrecionado()) {
+      presionarBoton(ledVerde);
+    } else if (botonAlto.estaPrecionado() && botonBajo.estaPrecionado()) {
+      presionarBoton(ledAmarillo);
+    } else if (!botonAlto.estaPrecionado() && botonBajo.estaPrecionado()) {
+      presionarBoton(ledRojo);
     }
 
     // Esperar un breve tiempo antes de la próxima entrada
@@ -129,10 +190,10 @@ void loop() {
   // Comparar las secuencias
   if (patronLeds.sonIguales(patronUsuario)) {
     longitud++;
-    titilarLed(led1);
+    ledVerde.titilar();
   } else {
     longitud = 3;
-    titilarLed(led3);
+    ledRojo.titilar();
   }
 
   // Reiniciar la secuencia del usuario
@@ -140,19 +201,9 @@ void loop() {
 }
 
 // Funcion para manejar las pulsaciones
-void presionarBoton(int pinLed, int valorLed) {
-  patronUsuario.insertar(valorLed);
-  digitalWrite(pinLed, HIGH);
+void presionarBoton(Led led) {
+  patronUsuario.insertar(led.getId());
+  led.encender();
   delay(500);
-  digitalWrite(pinLed, LOW);
-}
-
-// Función para hacer titilar un led
-void titilarLed(int pinLed) {
-  while (digitalRead(sw1) == HIGH && digitalRead(sw2) == HIGH) {
-    digitalWrite(pinLed, HIGH);
-    delay(200);
-    digitalWrite(pinLed, LOW);
-    delay(200);
-  }
+  led.apagar();
 }
