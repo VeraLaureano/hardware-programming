@@ -28,7 +28,8 @@ The project uses an Arduino Nano along with two buttons and three LEDs: green, y
 3. Have fun playing and improving your sequential memory!
 
 ## Connection Diagram
-
+Diagram provided by [Club de Robótica FI - UNLP](https://www.instagram.com/cdrfiunlp/) <br />
+<img width="520" src="./assets/PLACA.jpg"  />
 
 ## Contribution
 

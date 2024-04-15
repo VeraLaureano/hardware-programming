@@ -9,8 +9,8 @@
 int longitud = 3;
 
 // Definir los arreglos para almacenar las secuencias
-int patronOriginal[] = {2, 3, 1}; // Cambia este patrón según desees
-int secuenciaUsuario[longitud]; // Se almacenarán las entradas del usuario
+int patronOriginal[] = {0, 0, 0}; // Cambia este patrón según desees
+int secuenciaUsuario[] = {0, 0, 0}; // Se almacenarán las entradas del usuario
 
 void setup() {
   // Inicializar los pines de los leds y los botones
@@ -19,9 +19,22 @@ void setup() {
   pinMode(led3, OUTPUT);
   pinMode(sw1, INPUT_PULLUP);
   pinMode(sw2, INPUT_PULLUP);
+
+  Serial.begin(9600);
 }
 
 void loop() {
+  // Genera patron de forma random
+  patronOriginal[0] = random(1, 4);
+  patronOriginal[1] = random(1, 4);
+  patronOriginal[2] = random(1, 4);
+
+  Serial.println(patronOriginal[0]);
+  Serial.print(", ");
+  Serial.print(patronOriginal[1]);
+  Serial.print(", ");
+  Serial.print(patronOriginal[2]);
+  
   // Mostrar el patrón original
   mostrarPatron(patronOriginal);
 
@@ -31,16 +44,17 @@ void loop() {
       // Esperar a que se presione uno de los botones
     }
 
+    delay(200);
     if (digitalRead(sw1) == LOW && digitalRead(sw2) == HIGH) {
       secuenciaUsuario[i] = 1;
       digitalWrite(led1, HIGH);
       delay(500);
       digitalWrite(led1, LOW);
     } else if (digitalRead(sw1) == LOW && digitalRead(sw2) == LOW) {
-      secenciaUsuario[i] = 2;
+      secuenciaUsuario[i] = 2;
       digitalWrite(led2, HIGH);
       delay(500);
-      digitalWrite(led3, LOW);
+      digitalWrite(led2, LOW);
     } 
     else if (digitalRead(sw2) == LOW && digitalRead(sw1) == HIGH) {
       secuenciaUsuario[i] = 3;
@@ -50,7 +64,9 @@ void loop() {
     }
 
     // Esperar un breve tiempo antes de la próxima entrada
-    delay(100);
+    while (digitalRead(sw1) == LOW || digitalRead(sw2) == LOW) {
+      // Esperar a que se presione uno de los botones
+    }
   }
 
   // Comparar las secuencias
@@ -75,7 +91,7 @@ void mostrarPatron(int patron[]) {
       digitalWrite(led3, HIGH);
     }
 
-    delay(500);
+    delay(1000);
     digitalWrite(led1, LOW);
     digitalWrite(led2, LOW);
     digitalWrite(led3, LOW);
